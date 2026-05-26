@@ -1,0 +1,535 @@
+/* ===========================================================
+ * YJZ's Security Lab — Custom Theme
+ * 暗色科技风 · 网络安全主题
+ * =========================================================== */
+
+/* ---------- CSS Variables ---------- */
+:root {
+  --cyber-cyan: #00d4ff;
+  --cyber-green: #00ff88;
+  --cyber-red: #ff7b72;
+  --cyber-blue: #58a6ff;
+  --cyber-orange: #ffa657;
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #161b22;
+  --bg-card-hover: #1c2333;
+  --border-color: #30363d;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.15);
+  --glow-green: 0 0 20px rgba(0, 255, 136, 0.15);
+}
+
+/* ===========================================================
+ * Global & Layout
+ * =========================================================== */
+
+/* Page background */
+body {
+  background: var(--bg-primary);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ===========================================================
+ * Top Navigation
+ * =========================================================== */
+
+#nav {
+  background: rgba(13, 17, 23, 0.85) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+  transition: all 0.3s ease;
+}
+
+#nav a {
+  color: var(--text-primary) !important;
+  transition: color 0.3s ease;
+}
+
+#nav a:hover {
+  color: var(--cyber-cyan) !important;
+  text-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+}
+
+#nav #site-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+  color: var(--cyber-cyan) !important;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+#nav #site-name:hover {
+  color: var(--cyber-green) !important;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+}
+
+/* ===========================================================
+ * Top Image / Banner
+ * =========================================================== */
+
+#page-header:not(.not-top-img):before {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(13, 17, 23, 0.8) 100%);
+}
+
+#page-header #site-title {
+  font-family: 'JetBrains Mono', 'Noto Sans SC', sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+}
+
+#page-header #site-subtitle {
+  color: var(--text-secondary) !important;
+  letter-spacing: 1px;
+}
+
+/* ===========================================================
+ * Cards (Articles, Sidebar, etc.)
+ * =========================================================== */
+
+/* Base card style */
+#recent-posts > .recent-post-item,
+.layout > .recent-posts .pagination > *,
+.layout > .recent-posts .pagination > *:hover,
+.layout > aside > .card-widget,
+.layout > .post,
+#post > *,
+.layout-page > *,
+.flink-list > a,
+.flink-list > a:hover,
+.recent-post-item,
+.card-widget {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: none !important;
+}
+
+/* Hover effect for cards */
+#recent-posts > .recent-post-item:hover {
+  border-color: rgba(0, 212, 255, 0.3) !important;
+  box-shadow: 0 0 25px rgba(0, 212, 255, 0.08) !important;
+  transform: translateY(-2px);
+  background: var(--bg-card-hover) !important;
+}
+
+/* ===========================================================
+ * Post Content
+ * =========================================================== */
+
+/* Post headings */
+.layout > .post h1,
+.layout-page h1 {
+  color: var(--cyber-cyan) !important;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.layout > .post h2,
+.layout-page h2 {
+  color: var(--cyber-green) !important;
+}
+
+.layout > .post h3,
+.layout-page h3 {
+  color: var(--cyber-blue) !important;
+}
+
+.layout > .post h4,
+.layout-page h4 {
+  color: var(--text-primary) !important;
+}
+
+/* Headings with title prefix icon */
+.layout > .post h2:before,
+.layout-page h2:before {
+  color: var(--cyber-cyan) !important;
+  margin-right: 8px;
+}
+
+/* Links in content */
+.post-content a {
+  color: var(--cyber-blue) !important;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.post-content a:hover {
+  color: var(--cyber-cyan) !important;
+  border-bottom-color: var(--cyber-cyan);
+}
+
+/* ===========================================================
+ * Code Blocks
+ * =========================================================== */
+
+/* Inline code */
+code:not(pre code) {
+  color: var(--cyber-red) !important;
+  background: rgba(255, 123, 114, 0.1) !important;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.9em;
+}
+
+/* Code block container */
+.highlight,
+pre,
+figure.highlight {
+  border-radius: 10px !important;
+  border: 1px solid var(--border-color) !important;
+  background: #0d1117 !important;
+}
+
+/* Code block header (mac style) */
+.highlight .code-header {
+  background: #161b22 !important;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 10px 10px 0 0 !important;
+}
+
+/* Code block mac dots */
+.highlight .code-header:before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f56;
+  box-shadow: 20px 0 #ffbd2e, 40px 0 #27c93f;
+}
+
+.highlight .code-header .code-language {
+  padding-left: 60px !important;
+}
+
+/* Code lines */
+.highlight .code-pre .line,
+pre .code-pre .line {
+  color: var(--text-primary) !important;
+}
+
+/* ===========================================================
+ * Tables
+ * =========================================================== */
+
+table {
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+table thead th {
+  background: rgba(0, 212, 255, 0.1) !important;
+  color: var(--cyber-cyan) !important;
+  border-bottom: 2px solid var(--cyber-cyan);
+  font-weight: 600;
+  padding: 10px 14px;
+}
+
+table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.2s ease;
+}
+
+table tbody tr:hover {
+  background: rgba(0, 212, 255, 0.04);
+}
+
+table tbody td {
+  padding: 8px 14px;
+  color: var(--text-primary);
+}
+
+/* ===========================================================
+ * Blockquote
+ * =========================================================== */
+
+blockquote {
+  border-left: 4px solid var(--cyber-cyan) !important;
+  background: rgba(0, 212, 255, 0.05) !important;
+  border-radius: 4px 8px 8px 4px;
+  padding: 12px 16px;
+}
+
+blockquote p {
+  color: var(--text-secondary) !important;
+}
+
+/* ===========================================================
+ * Sidebar
+ * =========================================================== */
+
+/* Widget title */
+.card-widget .card-title,
+.card-widget .aside-title {
+  color: var(--cyber-cyan) !important;
+  font-weight: 600;
+}
+
+/* Sidebar item count */
+.card-widget .item-count {
+  background: rgba(0, 212, 255, 0.1) !important;
+  color: var(--cyber-cyan) !important;
+  border-radius: 12px;
+  padding: 0 8px;
+  font-size: 0.85em;
+}
+
+/* Author description */
+.card-widget .author_description {
+  color: var(--text-secondary) !important;
+  font-size: 0.95em;
+}
+
+/* Sidebar links */
+.card-widget a {
+  color: var(--text-primary) !important;
+  transition: color 0.3s ease;
+}
+
+.card-widget a:hover {
+  color: var(--cyber-cyan) !important;
+}
+
+/* Recent posts in sidebar */
+.card-widget .aside-recent-item .aside-post-item:hover {
+  background: rgba(0, 212, 255, 0.04) !important;
+  border-radius: 8px;
+}
+
+/* ===========================================================
+ * Tags & Categories
+ * =========================================================== */
+
+/* Tag badges */
+.tag-link,
+.category-link {
+  border-radius: 6px !important;
+  transition: all 0.3s ease !important;
+}
+
+.tag-link:hover,
+.category-link:hover {
+  background: rgba(0, 212, 255, 0.1) !important;
+  color: var(--cyber-cyan) !important;
+  transform: translateY(-1px);
+}
+
+/* ===========================================================
+ * Pagination
+ * =========================================================== */
+
+.pagination .page-number.current {
+  background: var(--cyber-cyan) !important;
+  color: var(--bg-primary) !important;
+  border-radius: 50% !important;
+}
+
+.pagination .page-number {
+  color: var(--text-primary) !important;
+  transition: all 0.3s ease;
+}
+
+.pagination .page-number:hover {
+  color: var(--cyber-cyan) !important;
+}
+
+/* ===========================================================
+ * Footer
+ * =========================================================== */
+
+#footer {
+  background: var(--bg-primary) !important;
+  border-top: 1px solid var(--border-color);
+}
+
+#footer-wrap {
+  color: var(--text-secondary) !important;
+}
+
+#footer-wrap a {
+  color: var(--cyber-cyan) !important;
+}
+
+/* ===========================================================
+ * Scrollbar
+ * =========================================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00d4ff;
+}
+
+/* ===========================================================
+ * Selection
+ * =========================================================== */
+
+::selection {
+  background: rgba(0, 212, 255, 0.3);
+  color: var(--text-primary);
+}
+
+/* ===========================================================
+ * Buttons
+ * =========================================================== */
+
+.btn {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2) !important;
+}
+
+/* ===========================================================
+ * Post Meta (Date, Categories, Tags)
+ * =========================================================== */
+
+.post-meta-date,
+.post-meta__tags {
+  color: var(--text-secondary) !important;
+}
+
+.post-meta > a,
+.post-meta .post-meta__tags a {
+  color: var(--cyber-blue) !important;
+}
+
+.post-meta > a:hover,
+.post-meta .post-meta__tags a:hover {
+  color: var(--cyber-cyan) !important;
+}
+
+/* ===========================================================
+ * Table of Contents
+ * =========================================================== */
+
+#toggle-sidebar {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+}
+
+#sidebar #toc {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+}
+
+#sidebar #toc a {
+  color: var(--text-secondary) !important;
+  transition: color 0.3s ease;
+}
+
+#sidebar #toc a:hover {
+  color: var(--cyber-cyan) !important;
+}
+
+/* ===========================================================
+ * Search
+ * =========================================================== */
+
+#search {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+}
+
+#search .search-dialog {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+}
+
+.search-dialog .search-input {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  color: var(--text-primary) !important;
+}
+
+.search-dialog .search-result a {
+  color: var(--cyber-cyan) !important;
+}
+
+/* ===========================================================
+ * Related Posts
+ * =========================================================== */
+
+.relatedPosts {
+  border-top: 1px solid var(--border-color);
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+}
+
+.relatedPosts .relatedPosts-title {
+  color: var(--cyber-cyan) !important;
+}
+
+.relatedPosts .relatedPosts-list .content .title {
+  color: var(--text-primary) !important;
+}
+
+.relatedPosts .relatedPosts-list .content:hover .title {
+  color: var(--cyber-cyan) !important;
+}
+
+/* ===========================================================
+ * Index Post Entry Title
+ * =========================================================== */
+
+.recent-post-item .post-title a {
+  color: var(--text-primary) !important;
+  transition: color 0.3s ease;
+}
+
+.recent-post-item .post-title a:hover {
+  color: var(--cyber-cyan) !important;
+}
+
+/* ===========================================================
+ * Responsive Tweaks
+ * =========================================================== */
+
+@media screen and (max-width: 768px) {
+  #recent-posts > .recent-post-item {
+    border-radius: 8px !important;
+  }
+
+  .layout > .post,
+  .layout-page > * {
+    border-radius: 8px !important;
+  }
+}
