@@ -76,6 +76,41 @@
     
     
     <entry>
+      <title>SQL 注入入门 —— 原理、分类与注入点判断</title>
+      <link href="/2026/05/17/Web%E5%AE%89%E5%85%A8/SQL%E6%B3%A8%E5%85%A5%E5%85%A5%E9%97%A8/"/>
+      <url>/2026/05/17/Web%E5%AE%89%E5%85%A8/SQL%E6%B3%A8%E5%85%A5%E5%85%A5%E9%97%A8/</url>
+      
+        <content type="html"><![CDATA[<h2 id="什么是-SQL-注入"><a href="#什么是-SQL-注入" class="headerlink" title="什么是 SQL 注入"></a>什么是 SQL 注入</h2><p>SQL 注入就是<strong>把恶意的 SQL 命令插入到网站的输入框</strong>（账号&#x2F;密码&#x2F;搜索等），让服务器执行这些恶意命令，从而获取甚至篡改数据库里的敏感数据。</p><h2 id="注入分类"><a href="#注入分类" class="headerlink" title="注入分类"></a>注入分类</h2><h3 id="1-按查询字段类型分"><a href="#1-按查询字段类型分" class="headerlink" title="1. 按查询字段类型分"></a>1. 按查询字段类型分</h3><table><thead><tr><th align="left">类型</th><th align="left">定义</th><th align="left">特点</th></tr></thead><tbody><tr><td align="left"><strong>字符型注入</strong></td><td align="left">输入的参数是<strong>字符串</strong>（带引号）</td><td align="left">必须用引号闭合，如 <code>&#39; or 1=1#</code></td></tr><tr><td align="left"><strong>数字型注入</strong></td><td align="left">输入的参数是<strong>整数</strong>（无引号）</td><td align="left">直接拼接 SQL，如 <code>id=1 and 1=1</code></td></tr></tbody></table><h3 id="2-按注入方法分（核心-4-种）"><a href="#2-按注入方法分（核心-4-种）" class="headerlink" title="2. 按注入方法分（核心 4 种）"></a>2. 按注入方法分（核心 4 种）</h3><table><thead><tr><th align="left">方法</th><th align="left">核心逻辑</th><th align="left">特点</th></tr></thead><tbody><tr><td align="left"><strong>Union 注入</strong></td><td align="left">利用 <code>UNION</code> 合并多条查询结果</td><td align="left">能直接把数据查出来，最常用</td></tr><tr><td align="left"><strong>报错注入</strong></td><td align="left">故意让 SQL 报错，把数据显示在错误信息里</td><td align="left">不用回显位，靠报错拿数据</td></tr><tr><td align="left"><strong>布尔注入</strong></td><td align="left">靠页面是否显示成功&#x2F;失败来猜数据</td><td align="left">页面只回显”成功&#x2F;失败”，慢慢猜</td></tr><tr><td align="left"><strong>时间注入</strong></td><td align="left">靠页面响应时间来推断数据</td><td align="left">无回显时用，靠 <code>sleep(5)</code> 等函数</td></tr></tbody></table><hr><h2 id="注入点"><a href="#注入点" class="headerlink" title="注入点"></a>注入点</h2><h3 id="什么是注入点"><a href="#什么是注入点" class="headerlink" title="什么是注入点"></a>什么是注入点</h3><p>用户输入<strong>能直接拼接到后台 SQL 语句并被数据库执行的入口</strong>。本质上就是<strong>人机交互的地方</strong>。</p><h3 id="常见注入点位置"><a href="#常见注入点位置" class="headerlink" title="常见注入点位置"></a>常见注入点位置</h3><table><thead><tr><th>位置</th><th>示例</th></tr></thead><tbody><tr><td>GET 请求参数</td><td>URL 中 <code>?id=1</code>、<code>?name=test</code></td></tr><tr><td>POST 请求参数</td><td>登录框、搜索框、表单提交</td></tr><tr><td>HTTP 请求头</td><td>Cookie、User-Agent、Referer</td></tr></tbody></table><h3 id="判断注入点的方法"><a href="#判断注入点的方法" class="headerlink" title="判断注入点的方法"></a>判断注入点的方法</h3><ul><li><strong>数字型</strong>：<code>id=1 AND 1=1</code> 正常，<code>id=1 AND 1=2</code> 异常</li><li><strong>字符型</strong>：输入 <code>&#39;</code> 页面报错 → 存在字符型注入</li></ul><hr><h2 id="闭合方式"><a href="#闭合方式" class="headerlink" title="闭合方式"></a>闭合方式</h2><table><thead><tr><th>类型</th><th>原始拼接方式</th><th align="center">是否需要闭合符</th><th>注入输入示例</th></tr></thead><tbody><tr><td>字符型</td><td><code>id=&#39;$id&#39;</code></td><td align="center">✅</td><td><code>1&#39; and 1=1--+</code></td></tr><tr><td>数字型</td><td><code>id=$id</code></td><td align="center">❌</td><td><code>1 and 1=2</code></td></tr></tbody></table><h3 id="常见闭合符号"><a href="#常见闭合符号" class="headerlink" title="常见闭合符号"></a>常见闭合符号</h3><p><code>&#39;</code> <code>&quot;</code> <code>&#39;)</code> <code>&#39;&#39;)</code> 等</p><h3 id="判断闭合三步骤"><a href="#判断闭合三步骤" class="headerlink" title="判断闭合三步骤"></a>判断闭合三步骤</h3><p><strong>第一步：测试单引号 <code>&#39;</code></strong></p><ul><li>提交 <code>?id=1&#39;</code></li><li>报错 → 单引号闭合 ✓</li><li>正常 → 继续下一步</li></ul><p><strong>第二步：测试双引号 <code>&quot;</code></strong></p><ul><li>提交 <code>?id=1&quot;</code></li><li>报错 → 双引号闭合 ✓</li><li>正常 → 大概率是数字型</li></ul><p><strong>第三步：验证数字型</strong></p><ul><li>提交 <code>?id=1 and 1=2</code></li><li>页面无数据&#x2F;异常 → 数字型</li><li>正常 → 考虑括号等特殊闭合</li></ul><h3 id="常用注释符"><a href="#常用注释符" class="headerlink" title="常用注释符"></a>常用注释符</h3><table><thead><tr><th>符号</th><th>说明</th></tr></thead><tbody><tr><td><code>--+</code></td><td>最常用，适配 URL 传参</td></tr><tr><td><code>#</code></td><td>MySQL 原生注释</td></tr><tr><td><code>%23</code></td><td><code>#</code> 的 URL 编码形式</td></tr></tbody></table><hr><h2 id="防护核心"><a href="#防护核心" class="headerlink" title="防护核心"></a>防护核心</h2><ol><li>对所有用户输入做<strong>严格过滤</strong></li><li>使用<strong>预编译语句</strong>（Prepared Statement）</li><li>避免<strong>直接拼接 SQL</strong></li></ol>]]></content>
+      
+      
+      <categories>
+          
+          <category> Web安全 </category>
+          
+          <category> SQL注入 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> SQL注入 </tag>
+            
+            <tag> Union注入 </tag>
+            
+            <tag> 报错注入 </tag>
+            
+            <tag> 布尔注入 </tag>
+            
+            <tag> 闭合方式 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>Union 联合注入实战 —— SQLi-Labs 通关步骤</title>
       <link href="/2026/05/17/Web%E5%AE%89%E5%85%A8/Union%E8%81%94%E5%90%88%E6%B3%A8%E5%85%A5%E5%AE%9E%E6%88%98/"/>
       <url>/2026/05/17/Web%E5%AE%89%E5%85%A8/Union%E8%81%94%E5%90%88%E6%B3%A8%E5%85%A5%E5%AE%9E%E6%88%98/</url>
@@ -103,41 +138,6 @@
             <tag> group_concat </tag>
             
             <tag> 靶场 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>SQL 注入入门 —— 原理、分类与注入点判断</title>
-      <link href="/2026/05/17/Web%E5%AE%89%E5%85%A8/SQL%E6%B3%A8%E5%85%A5%E5%85%A5%E9%97%A8/"/>
-      <url>/2026/05/17/Web%E5%AE%89%E5%85%A8/SQL%E6%B3%A8%E5%85%A5%E5%85%A5%E9%97%A8/</url>
-      
-        <content type="html"><![CDATA[<h2 id="什么是-SQL-注入"><a href="#什么是-SQL-注入" class="headerlink" title="什么是 SQL 注入"></a>什么是 SQL 注入</h2><p>SQL 注入就是<strong>把恶意的 SQL 命令插入到网站的输入框</strong>（账号&#x2F;密码&#x2F;搜索等），让服务器执行这些恶意命令，从而获取甚至篡改数据库里的敏感数据。</p><h2 id="注入分类"><a href="#注入分类" class="headerlink" title="注入分类"></a>注入分类</h2><h3 id="1-按查询字段类型分"><a href="#1-按查询字段类型分" class="headerlink" title="1. 按查询字段类型分"></a>1. 按查询字段类型分</h3><table><thead><tr><th align="left">类型</th><th align="left">定义</th><th align="left">特点</th></tr></thead><tbody><tr><td align="left"><strong>字符型注入</strong></td><td align="left">输入的参数是<strong>字符串</strong>（带引号）</td><td align="left">必须用引号闭合，如 <code>&#39; or 1=1#</code></td></tr><tr><td align="left"><strong>数字型注入</strong></td><td align="left">输入的参数是<strong>整数</strong>（无引号）</td><td align="left">直接拼接 SQL，如 <code>id=1 and 1=1</code></td></tr></tbody></table><h3 id="2-按注入方法分（核心-4-种）"><a href="#2-按注入方法分（核心-4-种）" class="headerlink" title="2. 按注入方法分（核心 4 种）"></a>2. 按注入方法分（核心 4 种）</h3><table><thead><tr><th align="left">方法</th><th align="left">核心逻辑</th><th align="left">特点</th></tr></thead><tbody><tr><td align="left"><strong>Union 注入</strong></td><td align="left">利用 <code>UNION</code> 合并多条查询结果</td><td align="left">能直接把数据查出来，最常用</td></tr><tr><td align="left"><strong>报错注入</strong></td><td align="left">故意让 SQL 报错，把数据显示在错误信息里</td><td align="left">不用回显位，靠报错拿数据</td></tr><tr><td align="left"><strong>布尔注入</strong></td><td align="left">靠页面是否显示成功&#x2F;失败来猜数据</td><td align="left">页面只回显”成功&#x2F;失败”，慢慢猜</td></tr><tr><td align="left"><strong>时间注入</strong></td><td align="left">靠页面响应时间来推断数据</td><td align="left">无回显时用，靠 <code>sleep(5)</code> 等函数</td></tr></tbody></table><hr><h2 id="注入点"><a href="#注入点" class="headerlink" title="注入点"></a>注入点</h2><h3 id="什么是注入点"><a href="#什么是注入点" class="headerlink" title="什么是注入点"></a>什么是注入点</h3><p>用户输入<strong>能直接拼接到后台 SQL 语句并被数据库执行的入口</strong>。本质上就是<strong>人机交互的地方</strong>。</p><h3 id="常见注入点位置"><a href="#常见注入点位置" class="headerlink" title="常见注入点位置"></a>常见注入点位置</h3><table><thead><tr><th>位置</th><th>示例</th></tr></thead><tbody><tr><td>GET 请求参数</td><td>URL 中 <code>?id=1</code>、<code>?name=test</code></td></tr><tr><td>POST 请求参数</td><td>登录框、搜索框、表单提交</td></tr><tr><td>HTTP 请求头</td><td>Cookie、User-Agent、Referer</td></tr></tbody></table><h3 id="判断注入点的方法"><a href="#判断注入点的方法" class="headerlink" title="判断注入点的方法"></a>判断注入点的方法</h3><ul><li><strong>数字型</strong>：<code>id=1 AND 1=1</code> 正常，<code>id=1 AND 1=2</code> 异常</li><li><strong>字符型</strong>：输入 <code>&#39;</code> 页面报错 → 存在字符型注入</li></ul><hr><h2 id="闭合方式"><a href="#闭合方式" class="headerlink" title="闭合方式"></a>闭合方式</h2><table><thead><tr><th>类型</th><th>原始拼接方式</th><th align="center">是否需要闭合符</th><th>注入输入示例</th></tr></thead><tbody><tr><td>字符型</td><td><code>id=&#39;$id&#39;</code></td><td align="center">✅</td><td><code>1&#39; and 1=1--+</code></td></tr><tr><td>数字型</td><td><code>id=$id</code></td><td align="center">❌</td><td><code>1 and 1=2</code></td></tr></tbody></table><h3 id="常见闭合符号"><a href="#常见闭合符号" class="headerlink" title="常见闭合符号"></a>常见闭合符号</h3><p><code>&#39;</code> <code>&quot;</code> <code>&#39;)</code> <code>&#39;&#39;)</code> 等</p><h3 id="判断闭合三步骤"><a href="#判断闭合三步骤" class="headerlink" title="判断闭合三步骤"></a>判断闭合三步骤</h3><p><strong>第一步：测试单引号 <code>&#39;</code></strong></p><ul><li>提交 <code>?id=1&#39;</code></li><li>报错 → 单引号闭合 ✓</li><li>正常 → 继续下一步</li></ul><p><strong>第二步：测试双引号 <code>&quot;</code></strong></p><ul><li>提交 <code>?id=1&quot;</code></li><li>报错 → 双引号闭合 ✓</li><li>正常 → 大概率是数字型</li></ul><p><strong>第三步：验证数字型</strong></p><ul><li>提交 <code>?id=1 and 1=2</code></li><li>页面无数据&#x2F;异常 → 数字型</li><li>正常 → 考虑括号等特殊闭合</li></ul><h3 id="常用注释符"><a href="#常用注释符" class="headerlink" title="常用注释符"></a>常用注释符</h3><table><thead><tr><th>符号</th><th>说明</th></tr></thead><tbody><tr><td><code>--+</code></td><td>最常用，适配 URL 传参</td></tr><tr><td><code>#</code></td><td>MySQL 原生注释</td></tr><tr><td><code>%23</code></td><td><code>#</code> 的 URL 编码形式</td></tr></tbody></table><hr><h2 id="防护核心"><a href="#防护核心" class="headerlink" title="防护核心"></a>防护核心</h2><ol><li>对所有用户输入做<strong>严格过滤</strong></li><li>使用<strong>预编译语句</strong>（Prepared Statement）</li><li>避免<strong>直接拼接 SQL</strong></li></ol>]]></content>
-      
-      
-      <categories>
-          
-          <category> Web安全 </category>
-          
-          <category> SQL注入 </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> Union注入 </tag>
-            
-            <tag> SQL注入 </tag>
-            
-            <tag> 报错注入 </tag>
-            
-            <tag> 布尔注入 </tag>
-            
-            <tag> 闭合方式 </tag>
             
         </tags>
       
