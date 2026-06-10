@@ -76,41 +76,6 @@
     
     
     <entry>
-      <title>HTTP 协议详解 —— 从渗透测试视角理解</title>
-      <link href="/2026/05/17/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/HTTP%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3/"/>
-      <url>/2026/05/17/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/HTTP%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3/</url>
-      
-        <content type="html"><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>HTTP（HyperText Transfer Protocol）是应用层协议，默认端口 <strong>80</strong>，明文传输。特点是<strong>无状态、无连接、明文不安全</strong>。</p><p>理解 HTTP 是学 Web 安全的第一步 —— 抓包、改包、重放、接口调试、挖漏洞全靠它。</p><h2 id="HTTP-整体流程"><a href="#HTTP-整体流程" class="headerlink" title="HTTP 整体流程"></a>HTTP 整体流程</h2><ol><li>建立 <strong>TCP 三次握手</strong>（传输层连接）</li><li>直接在 TCP 连接上<strong>传输 HTTP 明文内容</strong>（无加密、无 TLS 握手）</li><li>按 HTTP 标准格式完成请求&#x2F;响应</li><li>通信完成后，发起 <strong>TCP 四次挥手</strong>断开连接</li></ol><hr><h2 id="请求结构"><a href="#请求结构" class="headerlink" title="请求结构"></a>请求结构</h2><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/user/login</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>www.example.com</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 ...</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>SESSIONID=abc123</span><br><span class="line"></span><br><span class="line"><span class="language-ini"><span class="attr">username</span>=admin&amp;password=<span class="number">123456</span></span></span><br></pre></td></tr></table></figure><h3 id="1-请求行"><a href="#1-请求行" class="headerlink" title="1. 请求行"></a>1. 请求行</h3><ul><li><strong>请求方法</strong>：<code>GET</code> &#x2F; <code>POST</code> &#x2F; <code>PUT</code> &#x2F; <code>DELETE</code></li><li><strong>请求 URL</strong>：<code>/user/login</code></li><li><strong>HTTP 版本</strong>：<code>HTTP/1.1</code>、<code>HTTP/2</code></li></ul><h3 id="2-请求头"><a href="#2-请求头" class="headerlink" title="2. 请求头"></a>2. 请求头</h3><table><thead><tr><th>头部</th><th>作用</th></tr></thead><tbody><tr><td><code>Host</code></td><td>目标主机</td></tr><tr><td><code>User-Agent</code></td><td>客户端标识（浏览器类型）</td></tr><tr><td><code>Cookie</code></td><td>用户身份&#x2F;登录状态</td></tr><tr><td><code>Referer</code></td><td>从哪个页面跳过来</td></tr><tr><td><code>Content-Type</code></td><td>请求体的数据类型</td></tr></tbody></table><h3 id="3-空行（必须有）"><a href="#3-空行（必须有）" class="headerlink" title="3. 空行（必须有）"></a>3. 空行（必须有）</h3><h3 id="4-请求体"><a href="#4-请求体" class="headerlink" title="4. 请求体"></a>4. 请求体</h3><p>传给服务器的数据：登录账号密码、表单内容、上传的文件、JSON 数据等。</p><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span> <span class="attr">&quot;username&quot;</span><span class="punctuation">:</span> <span class="string">&quot;admin&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;password&quot;</span><span class="punctuation">:</span> <span class="string">&quot;123456&quot;</span> <span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure><p><strong>记忆规则</strong>：</p><ul><li><code>GET</code> → <strong>没有请求体</strong></li><li><code>POST</code> &#x2F; <code>PUT</code> &#x2F; <code>PATCH</code> → 一般有请求体</li></ul><hr><h2 id="常用请求方法"><a href="#常用请求方法" class="headerlink" title="常用请求方法"></a>常用请求方法</h2><table><thead><tr><th>方法</th><th>用途</th><th>特点</th></tr></thead><tbody><tr><td><code>GET</code></td><td>获取资源</td><td>参数在 URL 中，可缓存</td></tr><tr><td><code>POST</code></td><td>提交数据</td><td>参数在请求体，相对安全</td></tr><tr><td><code>PUT</code></td><td>完整覆盖修改</td><td>幂等</td></tr><tr><td><code>PATCH</code></td><td>局部修改</td><td>只改某个字段</td></tr><tr><td><code>DELETE</code></td><td>删除资源</td><td>幂等</td></tr><tr><td><code>HEAD</code></td><td>只拿响应头</td><td>探活、省流量</td></tr><tr><td><code>OPTIONS</code></td><td>问支持哪些方法</td><td>跨域预检</td></tr></tbody></table><hr><h2 id="响应结构"><a href="#响应结构" class="headerlink" title="响应结构"></a>响应结构</h2><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Server</span><span class="punctuation">: </span>nginx/1.18.0</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html; charset=utf-8</span><br><span class="line"><span class="attribute">Set-Cookie</span><span class="punctuation">: </span>session=abc123</span><br><span class="line"></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">html</span>&gt;</span>...<span class="tag">&lt;/<span class="name">html</span>&gt;</span></span></span><br></pre></td></tr></table></figure><h3 id="常见状态码"><a href="#常见状态码" class="headerlink" title="常见状态码"></a>常见状态码</h3><p><strong>2xx 成功</strong></p><ul><li><code>200 OK</code> — 请求成功</li></ul><p><strong>3xx 重定向</strong></p><ul><li><code>301</code> — 永久重定向（换域名）</li><li><code>302</code> — 临时重定向</li><li><code>304</code> — 资源没变，用本地缓存</li></ul><p><strong>4xx 客户端错误</strong></p><ul><li><code>400</code> — 请求参数错误</li><li><code>401</code> — 未登录&#x2F;没 token</li><li><code>403</code> — 禁止访问（登录了但没权限）</li><li><code>404</code> — 资源不存在</li><li><code>405</code> — 方法错误（该用 POST 却发了 GET）</li></ul><p><strong>5xx 服务端错误</strong></p><ul><li><code>500</code> — 服务器内部错误（代码报错&#x2F;数据库崩了）</li><li><code>502</code> — 网关错误（超时&#x2F;负载&#x2F;挂了）</li><li><code>503</code> — 服务器维护中</li></ul><h3 id="连状态码都没拿到的情况"><a href="#连状态码都没拿到的情况" class="headerlink" title="连状态码都没拿到的情况"></a>连状态码都没拿到的情况</h3><ul><li>无法连接 &#x2F; DNS 解析失败 &#x2F; 超时</li><li>这是网络层面就断了，HTTP 请求根本没到达服务器</li></ul><hr><h2 id="为什么-HTTP-不够安全"><a href="#为什么-HTTP-不够安全" class="headerlink" title="为什么 HTTP 不够安全"></a>为什么 HTTP 不够安全</h2><ul><li><strong>明文传输</strong>：易被窃听、篡改、劫持</li><li><strong>无加密</strong>：中间人可以随意修改</li><li><strong>无身份校验</strong>：无法确认通信对方是否伪冒</li></ul><p>现在 Web 已逐步迁移到 <strong>HTTPS（443 端口）</strong>。</p><hr><h2 id="渗透测试要点"><a href="#渗透测试要点" class="headerlink" title="渗透测试要点"></a>渗透测试要点</h2><ol><li>用 <strong>Burp Suite</strong> 抓包，分析请求&#x2F;响应结构</li><li>重点关注 Cookie、Authorization、Referer 等头部</li><li>修改参数值测试是否存在注入、越权、XSS</li><li>观察状态码变化判断后端行为</li></ol>]]></content>
-      
-      
-      <categories>
-          
-          <category> 网络协议 </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> HTTP </tag>
-            
-            <tag> BurpSuite </tag>
-            
-            <tag> 抓包 </tag>
-            
-            <tag> 状态码 </tag>
-            
-            <tag> GET </tag>
-            
-            <tag> POST </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>Union 联合注入实战 —— SQLi-Labs 通关步骤</title>
       <link href="/2026/05/17/Web%E5%AE%89%E5%85%A8/Union%E8%81%94%E5%90%88%E6%B3%A8%E5%85%A5%E5%AE%9E%E6%88%98/"/>
       <url>/2026/05/17/Web%E5%AE%89%E5%85%A8/Union%E8%81%94%E5%90%88%E6%B3%A8%E5%85%A5%E5%AE%9E%E6%88%98/</url>
@@ -173,6 +138,41 @@
             <tag> 布尔注入 </tag>
             
             <tag> 闭合方式 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>HTTP 协议详解 —— 从渗透测试视角理解</title>
+      <link href="/2026/05/17/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/HTTP%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3/"/>
+      <url>/2026/05/17/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/HTTP%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3/</url>
+      
+        <content type="html"><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>HTTP（HyperText Transfer Protocol）是应用层协议，默认端口 <strong>80</strong>，明文传输。特点是<strong>无状态、无连接、明文不安全</strong>。</p><p>理解 HTTP 是学 Web 安全的第一步 —— 抓包、改包、重放、接口调试、挖漏洞全靠它。</p><h2 id="HTTP-整体流程"><a href="#HTTP-整体流程" class="headerlink" title="HTTP 整体流程"></a>HTTP 整体流程</h2><ol><li>建立 <strong>TCP 三次握手</strong>（传输层连接）</li><li>直接在 TCP 连接上<strong>传输 HTTP 明文内容</strong>（无加密、无 TLS 握手）</li><li>按 HTTP 标准格式完成请求&#x2F;响应</li><li>通信完成后，发起 <strong>TCP 四次挥手</strong>断开连接</li></ol><hr><h2 id="请求结构"><a href="#请求结构" class="headerlink" title="请求结构"></a>请求结构</h2><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/user/login</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>www.example.com</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 ...</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>SESSIONID=abc123</span><br><span class="line"></span><br><span class="line"><span class="language-ini"><span class="attr">username</span>=admin&amp;password=<span class="number">123456</span></span></span><br></pre></td></tr></table></figure><h3 id="1-请求行"><a href="#1-请求行" class="headerlink" title="1. 请求行"></a>1. 请求行</h3><ul><li><strong>请求方法</strong>：<code>GET</code> &#x2F; <code>POST</code> &#x2F; <code>PUT</code> &#x2F; <code>DELETE</code></li><li><strong>请求 URL</strong>：<code>/user/login</code></li><li><strong>HTTP 版本</strong>：<code>HTTP/1.1</code>、<code>HTTP/2</code></li></ul><h3 id="2-请求头"><a href="#2-请求头" class="headerlink" title="2. 请求头"></a>2. 请求头</h3><table><thead><tr><th>头部</th><th>作用</th></tr></thead><tbody><tr><td><code>Host</code></td><td>目标主机</td></tr><tr><td><code>User-Agent</code></td><td>客户端标识（浏览器类型）</td></tr><tr><td><code>Cookie</code></td><td>用户身份&#x2F;登录状态</td></tr><tr><td><code>Referer</code></td><td>从哪个页面跳过来</td></tr><tr><td><code>Content-Type</code></td><td>请求体的数据类型</td></tr></tbody></table><h3 id="3-空行（必须有）"><a href="#3-空行（必须有）" class="headerlink" title="3. 空行（必须有）"></a>3. 空行（必须有）</h3><h3 id="4-请求体"><a href="#4-请求体" class="headerlink" title="4. 请求体"></a>4. 请求体</h3><p>传给服务器的数据：登录账号密码、表单内容、上传的文件、JSON 数据等。</p><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span> <span class="attr">&quot;username&quot;</span><span class="punctuation">:</span> <span class="string">&quot;admin&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;password&quot;</span><span class="punctuation">:</span> <span class="string">&quot;123456&quot;</span> <span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure><p><strong>记忆规则</strong>：</p><ul><li><code>GET</code> → <strong>没有请求体</strong></li><li><code>POST</code> &#x2F; <code>PUT</code> &#x2F; <code>PATCH</code> → 一般有请求体</li></ul><hr><h2 id="常用请求方法"><a href="#常用请求方法" class="headerlink" title="常用请求方法"></a>常用请求方法</h2><table><thead><tr><th>方法</th><th>用途</th><th>特点</th></tr></thead><tbody><tr><td><code>GET</code></td><td>获取资源</td><td>参数在 URL 中，可缓存</td></tr><tr><td><code>POST</code></td><td>提交数据</td><td>参数在请求体，相对安全</td></tr><tr><td><code>PUT</code></td><td>完整覆盖修改</td><td>幂等</td></tr><tr><td><code>PATCH</code></td><td>局部修改</td><td>只改某个字段</td></tr><tr><td><code>DELETE</code></td><td>删除资源</td><td>幂等</td></tr><tr><td><code>HEAD</code></td><td>只拿响应头</td><td>探活、省流量</td></tr><tr><td><code>OPTIONS</code></td><td>问支持哪些方法</td><td>跨域预检</td></tr></tbody></table><hr><h2 id="响应结构"><a href="#响应结构" class="headerlink" title="响应结构"></a>响应结构</h2><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Server</span><span class="punctuation">: </span>nginx/1.18.0</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html; charset=utf-8</span><br><span class="line"><span class="attribute">Set-Cookie</span><span class="punctuation">: </span>session=abc123</span><br><span class="line"></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">html</span>&gt;</span>...<span class="tag">&lt;/<span class="name">html</span>&gt;</span></span></span><br></pre></td></tr></table></figure><h3 id="常见状态码"><a href="#常见状态码" class="headerlink" title="常见状态码"></a>常见状态码</h3><p><strong>2xx 成功</strong></p><ul><li><code>200 OK</code> — 请求成功</li></ul><p><strong>3xx 重定向</strong></p><ul><li><code>301</code> — 永久重定向（换域名）</li><li><code>302</code> — 临时重定向</li><li><code>304</code> — 资源没变，用本地缓存</li></ul><p><strong>4xx 客户端错误</strong></p><ul><li><code>400</code> — 请求参数错误</li><li><code>401</code> — 未登录&#x2F;没 token</li><li><code>403</code> — 禁止访问（登录了但没权限）</li><li><code>404</code> — 资源不存在</li><li><code>405</code> — 方法错误（该用 POST 却发了 GET）</li></ul><p><strong>5xx 服务端错误</strong></p><ul><li><code>500</code> — 服务器内部错误（代码报错&#x2F;数据库崩了）</li><li><code>502</code> — 网关错误（超时&#x2F;负载&#x2F;挂了）</li><li><code>503</code> — 服务器维护中</li></ul><h3 id="连状态码都没拿到的情况"><a href="#连状态码都没拿到的情况" class="headerlink" title="连状态码都没拿到的情况"></a>连状态码都没拿到的情况</h3><ul><li>无法连接 &#x2F; DNS 解析失败 &#x2F; 超时</li><li>这是网络层面就断了，HTTP 请求根本没到达服务器</li></ul><hr><h2 id="为什么-HTTP-不够安全"><a href="#为什么-HTTP-不够安全" class="headerlink" title="为什么 HTTP 不够安全"></a>为什么 HTTP 不够安全</h2><ul><li><strong>明文传输</strong>：易被窃听、篡改、劫持</li><li><strong>无加密</strong>：中间人可以随意修改</li><li><strong>无身份校验</strong>：无法确认通信对方是否伪冒</li></ul><p>现在 Web 已逐步迁移到 <strong>HTTPS（443 端口）</strong>。</p><hr><h2 id="渗透测试要点"><a href="#渗透测试要点" class="headerlink" title="渗透测试要点"></a>渗透测试要点</h2><ol><li>用 <strong>Burp Suite</strong> 抓包，分析请求&#x2F;响应结构</li><li>重点关注 Cookie、Authorization、Referer 等头部</li><li>修改参数值测试是否存在注入、越权、XSS</li><li>观察状态码变化判断后端行为</li></ol>]]></content>
+      
+      
+      <categories>
+          
+          <category> 网络协议 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> HTTP </tag>
+            
+            <tag> BurpSuite </tag>
+            
+            <tag> 抓包 </tag>
+            
+            <tag> 状态码 </tag>
+            
+            <tag> GET </tag>
+            
+            <tag> POST </tag>
             
         </tags>
       
